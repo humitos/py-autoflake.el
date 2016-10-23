@@ -1,4 +1,5 @@
-;;; py-docformatter.el --- Use docformatter to beautify a Python buffer
+;;; py-autoflake.el --- Use autoflake to remove unused imports and
+;;; unused variables as reported by pyflakes.
 
 ;; Copyright (C) 2016, Manuel Kaufmann <humitos@gmail.com>
 
@@ -8,59 +9,59 @@
 
 ;;; Commentary:
 
-;; Provides the `py-docformatter' command, which uses the external
-;; "docformatter" tool to tidy up the current buffer according to
-;; Python's PEP257.
+;; Provides the `py-autoflake' command, which uses the external
+;; "autoflake" tool to remove unused imports and unused variables as
+;; reported by pyflakes.
 
 ;; To automatically apply when saving a python file, use the
 ;; following code:
 
-;;   (add-hook 'python-mode-hook 'py-docformatter-enable-on-save)
+;;   (add-hook 'python-mode-hook 'py-autoflake-enable-on-save)
 
-;; To customize the behaviour of "docformatter" you can set the
-;; py-docformatter-options e.g.
+;; To customize the behaviour of "autoflake" you can set the
+;; py-autoflake-options e.g.
 
-;;   (setq py-docformatter-options '("--wrap-summaries=100"))
+;;   (setq py-autoflake-options '("--remove-all-unused-imports" "--remove-unused-variables"))
 
 ;; This file is 99.9% based on py-autopep8.el
 ;; (https://github.com/paetzke/py-autopep8.el)
 
 ;;; Code:
 
-(defgroup py-docformatter nil
-  "Use docformatter to beautify a Python buffer."
+(defgroup py-autoflake nil
+  "Use autoflake to beautify a Python buffer."
   :group 'convenience
-  :prefix "py-docformatter-")
+  :prefix "py-autoflake-")
 
 
-(defcustom py-docformatter-options nil
-  "Options used for docformatter.
+(defcustom py-autoflake-options nil
+  "Options used for autoflake.
 
 Note that `--in-place' is used by default."
-  :group 'py-docformatter
+  :group 'py-autoflake
   :type '(repeat (string :tag "option")))
 
 
-(defun py-docformatter--call-executable (errbuf file)
-  (zerop (apply 'call-process "docformatter" nil errbuf nil
-                (append py-docformatter-options `("--in-place", file)))))
+(defun py-autoflake--call-executable (errbuf file)
+  (zerop (apply 'call-process "autoflake" nil errbuf nil
+                (append py-autoflake-options `("--in-place", file)))))
 
 
 ;;;###autoload
-(defun py-docformatter-buffer ()
-  "Uses the \"docformatter\" tool to reformat the current buffer."
+(defun py-autoflake-buffer ()
+  "Uses the \"autoflake\" tool to reformat the current buffer."
   (interactive)
-  (py-docformatter-bf--apply-executable-to-buffer "docformatter"
-						  'py-docformatter--call-executable
+  (py-autoflake-bf--apply-executable-to-buffer "autoflake"
+						  'py-autoflake--call-executable
 						  nil
 						  "py"))
 
 
 ;;;###autoload
-(defun py-docformatter-enable-on-save ()
-  "Pre-save hook to be used before running docformatter."
+(defun py-autoflake-enable-on-save ()
+  "Pre-save hook to be used before running autoflake."
   (interactive)
-  (add-hook 'before-save-hook 'py-docformatter-buffer nil t))
+  (add-hook 'before-save-hook 'py-autoflake-buffer nil t))
 
 
 ;; BEGIN GENERATED -----------------
@@ -75,7 +76,7 @@ Note that `--in-place' is used by default."
 ;; See LICENSE or https://raw.githubusercontent.com/dominikh/go-mode.el/master/LICENSE
 
 
-(defun py-docformatter-bf--apply-rcs-patch (patch-buffer)
+(defun py-autoflake-bf--apply-rcs-patch (patch-buffer)
   "Apply an RCS-formatted diff from PATCH-BUFFER to the current buffer."
   (let ((target-buffer (current-buffer))
         (line-offset 0))
@@ -84,7 +85,7 @@ Note that `--in-place' is used by default."
         (goto-char (point-min))
         (while (not (eobp))
           (unless (looking-at "^\\([ad]\\)\\([0-9]+\\) \\([0-9]+\\)")
-            (error "invalid rcs patch or internal error in py-docformatter-bf--apply-rcs-patch"))
+            (error "invalid rcs patch or internal error in py-autoflake-bf--apply-rcs-patch"))
           (forward-line)
           (let ((action (match-string 1))
                 (from (string-to-number (match-string 2)))
@@ -107,15 +108,15 @@ Note that `--in-place' is used by default."
                 (kill-whole-line len)
                 (pop kill-ring)))
              (t
-              (error "invalid rcs patch or internal error in py-docformatter-bf--apply-rcs-patch")))))))))
+              (error "invalid rcs patch or internal error in py-autoflake-bf--apply-rcs-patch")))))))))
 
 
-(defun py-docformatter-bf--replace-region (filename)
+(defun py-autoflake-bf--replace-region (filename)
   (delete-region (region-beginning) (region-end))
   (insert-file-contents filename))
 
 
-(defun py-docformatter-bf--apply-executable-to-buffer (executable-name
+(defun py-autoflake-bf--apply-executable-to-buffer (executable-name
 						       executable-call
 						       only-on-region
 						       file-extension)
@@ -146,8 +147,8 @@ Note that `--in-place' is used by default."
               (message (format "Buffer is already %sed" executable-name)))
 
           (if only-on-region
-              (py-docformatter-bf--replace-region tmpfile)
-            (py-docformatter-bf--apply-rcs-patch patchbuf))
+              (py-autoflake-bf--replace-region tmpfile)
+            (py-autoflake-bf--apply-rcs-patch patchbuf))
 
           (kill-buffer errbuf)
           (pop kill-ring)
@@ -159,11 +160,11 @@ Note that `--in-place' is used by default."
     (delete-file tmpfile)))
 
 
-;; py-docformatter-bf.el ends here
+;; py-autoflake-bf.el ends here
 ;; END GENERATED -------------------
 
 
-(provide 'py-docformatter)
+(provide 'py-autoflake)
 
 
-;;; py-docformatter.el ends here
+;;; py-autoflake.el ends here
